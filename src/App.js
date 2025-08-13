@@ -109,8 +109,17 @@ const App = () => {
   };
 
 const renderHome = () => (
-  <div className="container py-4">
-    <div className="text-center mb-4 d-flex justify-content-center align-items-center gap-3">
+  <div className="container min-vh-100 d-flex flex-column justify-content-center align-items-center text-center py-4">
+    {/* Logo di atas tajuk */}
+    <img
+      src="/comptia-logo.svg"
+      alt="CompTIA"
+      style={{ height: '48px' }}
+      className="mb-2"
+    />
+
+    {/* Tajuk + toggle dark mode */}
+    <div className="mb-4 d-flex flex-wrap justify-content-center align-items-center gap-3">
       <h1 className="fw-bold m-0">Mock Cloud+ Exam</h1>
       <button
         onClick={() => setDarkMode(!darkMode)}
@@ -122,31 +131,35 @@ const renderHome = () => (
       </button>
     </div>
 
-    <div className="text-center mt-3">
+    {/* Start button */}
+    <div className="text-center mt-2">
       <button onClick={startExam} className="btn btn-primary btn-lg">Ready? Start Test</button>
     </div>
 
-    <h2 className="mt-5 fw-bold">History</h2>
-    {scoreHistory.length === 0 ? (
-      <p>No attempts yet.</p>
-    ) : (
-      <>
-        <ul>
-          {scoreHistory.map((s, i) => (
-            <li key={i}>Take {i + 1}: {s}/50</li>
-          ))}
-        </ul>
-        <button
-          className="btn btn-danger"
-          onClick={() => {
-            localStorage.removeItem('scoreHistory');
-            setScoreHistory([]);
-          }}
-        >
-          Reset History
-        </button>
-      </>
-    )}
+    {/* History (masih centered) */}
+    <div className="mt-5" style={{ maxWidth: 720 }}>
+      <h2 className="fw-bold">History</h2>
+      {scoreHistory.length === 0 ? (
+        <p>No attempts yet.</p>
+      ) : (
+        <>
+          <ul className="list-unstyled">
+            {scoreHistory.map((s, i) => (
+              <li key={i}>Take {i + 1}: {s}/50</li>
+            ))}
+          </ul>
+          <button
+            className="btn btn-danger"
+            onClick={() => {
+              localStorage.removeItem('scoreHistory');
+              setScoreHistory([]);
+            }}
+          >
+            Reset History
+          </button>
+        </>
+      )}
+    </div>
   </div>
 );
 
