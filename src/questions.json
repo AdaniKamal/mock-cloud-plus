@@ -2646,7 +2646,7 @@
       "C": "Event",
       "D": "Trending"
     },
-    "answer": "B",
+    "answer": "C",
     "explanation": null
   },
   {
@@ -2659,7 +2659,7 @@
       "C": "The RAM on each VM is insufficient.",
       "D": "The storage is overutilized."
     },
-    "answer": "C",
+    "answer": "D",
     "explanation": null
   },
   {
