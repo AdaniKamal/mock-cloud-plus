@@ -1,265 +1,294 @@
-import json, textwrap, os, pathlib
+import json, os, textwrap, zipfile, shutil, pathlib, io
 
+base = "/mnt/data"
 notes = [
   {
     "id": "resource-metering",
     "title": "Resource Metering & Billing",
     "content": [
-      "Tracks and measures actual cloud resource usage (CPU time, storage, bandwidth).",
-      "Enables accurate chargeback/showback and capacity planning.",
-      "Foundation of utility/consumption models (pay-as-you-go)."
+      "Tracks actual usage (CPU, storage, bandwidth) for chargeback/showback.",
+      "Enables utility pricing (pay-as-you-go).",
+      "Helps capacity planning and rightsizing."
     ]
   },
   {
     "id": "pricing-models",
-    "title": "Pricing: Pay-as-you-go & Reservations",
+    "title": "Pricing Models & Reservations",
     "content": [
-      "Pay-as-you-go: Only pay for what you use, like a utility bill.",
-      "Dedicated host: Single-tenant physical server assigned to one customer for isolation/control.",
-      "Reserved resources: Commit for 1–3 years to get discounts vs on-demand pricing."
+      "Pay-as-you-go: Pay only for what you use.",
+      "Dedicated host: Single-tenant physical server for isolation/control.",
+      "Reserved resources: 1–3 year commitment for discounts vs on-demand."
     ]
   },
   {
-    "id": "6r-migration-overview",
-    "title": "Cloud Migration Strategies (6R highlights)",
+    "id": "migration-6r",
+    "title": "Cloud Migration (6R) – Highlights",
     "content": [
-      "Rehost (lift-and-shift): Move as-is; minimal code changes.",
-      "Replatform: Small changes to use managed/cloud features; no full rewrite.",
-      "Refactor: Restructure code/architecture to be cloud-native without changing core function.",
-      "Retain: Keep on-prem/not moving for now (e.g., compliance, latency).",
+      "Rehost (lift & shift): Minimal changes, move as-is.",
+      "Replatform: Light tweaks to use managed services; no full rewrite.",
+      "Refactor: Redesign code/architecture for cloud-native benefits.",
+      "Retain: Keep on-prem for now (e.g., compliance, latency).",
       "Retire: Decommission apps with no business value."
     ]
   },
   {
     "id": "deploy-strategies",
-    "title": "App Deployment Strategies",
+    "title": "Deployment Strategies",
     "content": [
-      "Blue-Green: Two identical prod envs; switch traffic between them for instant cutover/rollback.",
-      "Canary: Release to a small subset first; expand if healthy (reduces blast radius).",
-      "Rolling: Replace instances in batches until all run the new version.",
-      "In-Place (Recreate/Big-Bang): Stop old, deploy new on same infra; simplest but causes downtime."
+      "Blue-Green: Two identical prod envs; flip traffic for instant rollback.",
+      "Canary: Release to a small subset first; expand if healthy.",
+      "Rolling: Replace instances in batches; low/no downtime.",
+      "In-Place (Recreate): Stop old, start new on same hosts; simplest, downtime."
     ]
   },
   {
-    "id": "container-repos",
+    "id": "repos",
     "title": "Container Repositories",
     "content": [
-      "Public repos: Pull without authentication (e.g., Docker Hub public images).",
-      "Private repos: Require auth; used for internal/proprietary images."
+      "Public: Pull without auth (e.g., Docker Hub public).",
+      "Private: Requires auth; for internal or proprietary images."
     ]
   },
   {
     "id": "uat",
     "title": "User Acceptance Testing (UAT)",
     "content": [
-      "Performed before production approval to validate business requirements.",
-      "Confirms the change works for real users in realistic conditions."
+      "Happens before production approval.",
+      "Validates business requirements and real-world workflows."
     ]
   },
   {
     "id": "ephemeral-storage",
     "title": "Ephemeral Storage",
     "content": [
-      "Temporary/local storage for short-term data; not durable.",
-      "Example: Camera stores incident video locally until uploaded to cloud, then deletes local copy.",
+      "Temporary/local; not durable.",
+      "Example: Video kept locally until uploaded, then deleted.",
       "Not suitable for per-user persistent quotas."
     ]
   },
   {
-    "id": "rest-soap",
-    "title": "REST vs SOAP (API Styles)",
+    "id": "api-styles",
+    "title": "API Styles: REST vs SOAP",
     "content": [
-      "REST: Architectural style using HTTP verbs (GET, POST, PUT, DELETE).",
-      "SOAP: Protocol using XML envelopes over HTTP/SMTP/etc; strict contracts."
+      "REST: HTTP verbs (GET/POST/PUT/DELETE), resource-oriented.",
+      "SOAP: XML protocol with strict contracts; can use HTTP/SMTP."
     ]
   },
   {
     "id": "event-driven",
     "title": "Event-Driven Architecture",
     "content": [
-      "Actions are triggered by events (file uploaded, message published).",
-      "Great for automation, decoupling, and reactive workflows."
+      "Actions triggered by events (e.g., file upload).",
+      "Great for automation and decoupling."
     ]
   },
   {
-    "id": "authn-authz-basics",
-    "title": "Auth Basics: MFA, OAuth2, OIDC, SSO",
+    "id": "authn-authz",
+    "title": "Auth: MFA, OAuth2, OIDC, SSO & Quotas",
     "content": [
-      "MFA: Require two or more factors (password + phone/token).",
-      "OAuth 2.0: Authorization framework (delegates access); not authentication by itself.",
-      "OIDC: Identity layer on top of OAuth 2.0 that provides authentication.",
-      "SSO: Single login for multiple apps; does not guarantee MFA.",
-      "Storage quotas: Enforce per-user limits (e.g., 10 GB each)."
+      "MFA: Two or more factors (password + phone/token).",
+      "OAuth2: Authorization framework; not authentication by itself.",
+      "OIDC: Identity layer on OAuth2 that provides authentication.",
+      "SSO: One login for many apps; does not imply MFA.",
+      "Storage quotas: Enforce per-user limits (e.g., 10 GB)."
     ]
   },
   {
-    "id": "snapshots-backups",
+    "id": "snapshots-vs-backups",
     "title": "Snapshots vs Backups",
     "content": [
-      "Snapshot: Point-in-time state; often depends on original storage; not a full backup.",
-      "Can grow quickly if many changes; manage/expire them to avoid storage bloat."
+      "Snapshot: Point-in-time state; may depend on original storage.",
+      "Not a substitute for off-platform backups; can grow fast."
     ]
   },
   {
     "id": "backup-types",
     "title": "Backup Types",
     "content": [
-      "Full: Copy all data; slowest and largest.",
-      "Differential: Changes since last full; grows until next full.",
-      "Incremental: Changes since last backup (full or incremental); most storage-efficient."
+      "Full: All data; largest, slowest.",
+      "Differential: Since last full; grows until next full.",
+      "Incremental: Since last backup (full/incremental); most efficient."
     ]
   },
   {
     "id": "storage-bloat",
-    "title": "Storage Bloat: Causes",
+    "title": "Storage Bloat – Causes",
     "content": [
-      "Redundant copies/backups; unmanaged snapshots/logs; temp files.",
-      "Inefficient schedules (too many full backups)."
+      "Redundant copies, unmanaged snapshots/logs, temp files.",
+      "Overuse of full backups; lack of lifecycle policies."
     ]
   },
   {
-    "id": "colocation-replication",
+    "id": "colo-replication",
     "title": "Colocation & Off-Site Replication",
     "content": [
-      "Colocation: Rent space in a 3rd-party data center for your hardware (power, cooling, security).",
-      "Off-site: Data stored in a separate location; replication copies data there for resiliency.",
-      "On-site only is risky for natural disasters; retention = how long data is kept."
+      "Colo: Rent space in 3rd-party DC (power, cooling, security).",
+      "Off-site replication protects against local disasters.",
+      "Retention = how long data is kept (policy/compliance)."
     ]
   },
   {
     "id": "vuln-mgmt",
     "title": "Vulnerability Management Flow",
     "content": [
-      "Identification: Discover potential weaknesses.",
-      "Scanning: Active probing to detect vulnerabilities (part of identification).",
-      "Assessment: Prioritize by likelihood/impact.",
-      "Remediation: Fix or mitigate the issues."
+      "Identification → Scanning → Assessment → Remediation."
     ]
   },
   {
     "id": "vuln-scoring",
-    "title": "Vuln Scoring & Catalogs",
+    "title": "Vulnerability Scoring & Catalogs",
     "content": [
-      "CVSS: Standard severity scoring (0.0–10.0).",
-      "CVE: Public list of known vulnerabilities (IDs + descriptions).",
-      "CWE: Catalog of common weakness types (design/implementation flaws).",
-      "CWSS: Scores software weaknesses (less widely adopted)."
+      "CVSS: Severity score (0.0–10.0).",
+      "CVE: Known vulnerabilities (IDs + descriptions).",
+      "CWE: Weakness categories (design/implementation flaws).",
+      "CWSS: Scores weaknesses (less adopted)."
     ]
   },
   {
-    "id": "git-basics",
+    "id": "git",
     "title": "Git Basics",
     "content": [
-      "git fetch: Download remote changes; don’t merge.",
-      "git pull: Fetch + merge into current branch.",
-      "git commit: Record staged changes locally with a message.",
-      "git push: Upload local commits to the remote."
+      "fetch: Download remote refs; no merge.",
+      "pull: fetch + merge into current branch.",
+      "commit: Record staged changes locally.",
+      "push: Upload local commits to remote."
     ]
   },
   {
-    "id": "rdbms-sql-mysql",
+    "id": "rdbms-sql",
     "title": "RDBMS vs SQL vs MySQL",
     "content": [
-      "RDBMS: Software to manage relational databases (e.g., MySQL, PostgreSQL).",
-      "SQL: Query language used with RDBMS.",
-      "MySQL: An RDBMS that uses SQL; SQL itself is not a database."
+      "RDBMS: DB engine (MySQL/Postgres).",
+      "SQL: Query language for RDBMS.",
+      "MySQL: An RDBMS that uses SQL."
     ]
   },
   {
-    "id": "reserved-instances",
+    "id": "reserved-vms",
     "title": "Reserved VM Instances",
     "content": [
-      "Commit to specific VM types for 1–3 years to get significant discounts vs on-demand."
+      "Commit to VM sizes for 1–3 years for big discounts vs on-demand."
     ]
   },
   {
-    "id": "ssd-write-intensive",
+    "id": "write-intensive-ssd",
     "title": "Write-Intensive SSDs",
     "content": [
-      "Optimized for heavy write workloads; higher endurance and sustained write performance."
+      "High endurance and sustained writes for heavy ingest workloads."
     ]
   },
   {
     "id": "cdn",
-    "title": "Content Delivery Network (CDN)",
+    "title": "CDN (Content Delivery Network)",
     "content": [
-      "Caches content at edge locations near users.",
-      "Improves latency, throughput, and availability for static assets/media."
+      "Caches content near users to reduce latency and improve performance/availability."
     ]
   },
   {
     "id": "token-auth",
     "title": "Token-Based Authentication",
     "content": [
-      "After login, client receives a token and reuses it for subsequent requests.",
-      "Reduces repeated credential entry; commonly implemented with JWTs."
+      "Issue a token after login; reuse token for protected requests (e.g., JWT)."
     ]
   },
   {
     "id": "rbac",
-    "title": "RBAC (Role-Based Access Control)",
+    "title": "RBAC – Role-Based Access Control",
     "content": [
-      "Permissions are attached to roles; users receive roles.",
-      "Easier to manage at scale; follow least-privilege via role design."
+      "Assign permissions to roles; users receive roles; enables least-privilege at scale."
     ]
   },
   {
     "id": "dac",
-    "title": "DAC (Discretionary Access Control)",
+    "title": "DAC – Discretionary Access Control",
     "content": [
-      "Resource owner decides who can access and what actions they can perform.",
-      "Contrasts with MAC (policy-driven central control)."
+      "Resource owner decides access and allowed actions.",
+      "Differs from MAC (central policy enforcement)."
     ]
   },
   {
     "id": "api-paradigms",
     "title": "API Paradigms: REST, GraphQL, RPC",
     "content": [
-      "REST: Resource-oriented, multiple endpoints, HTTP verbs.",
-      "GraphQL: Single endpoint; clients query exactly the data they need.",
-      "RPC: Call functions remotely as if local; procedure-centric."
+      "REST: Resource-oriented, multiple endpoints.",
+      "GraphQL: Single endpoint; client specifies data shape.",
+      "RPC: Call remote functions like local procedures."
     ]
   },
   {
     "id": "mysql-port",
     "title": "Default MySQL Port",
-    "content": [
-      "TCP 3306 (also used by MariaDB)."
-    ]
+    "content": ["TCP 3306 (also MariaDB)."]
   },
   {
-    "id": "accessibility-vision",
+    "id": "a11y-vision",
     "title": "Accessibility: Visually Impaired",
     "content": [
       "Reduced eyesight not fully correctable by glasses/contacts/medication/surgery.",
-      "Design UIs with high contrast, keyboard navigation, and screen-reader support."
+      "Design for contrast, keyboard nav, and screen readers."
     ]
   },
   {
     "id": "ocr",
-    "title": "Optical Character Recognition (OCR)",
-    "content": [
-      "Converts images/scans of text into machine-readable text (e.g., scanned receipts)."
-    ]
+    "title": "OCR – Optical Character Recognition",
+    "content": ["Converts scanned images of text into machine-readable text."]
   },
   {
-    "id": "sentiment-analysis",
+    "id": "sentiment",
     "title": "Sentiment Analysis",
-    "content": [
-      "NLP/ML technique to detect the emotional tone of text (positive, negative, neutral)."
-    ]
+    "content": ["NLP/ML to detect sentiment (positive/negative/neutral)."]
   },
   {
     "id": "visual-recognition",
     "title": "Visual Recognition",
-    "content": [
-      "Identify objects/scenes/people from images; compare against known patterns."
-    ]
+    "content": ["Identify objects/scenes/people from images via pattern matching/ML."]
   }
 ]
 
-path = "/mnt/data/notes.json"
-with open(path, "w", encoding="utf-8") as f:
+simulations = [
+  {
+    "id": 74,
+    "label": "Q74 – Storage Throughput SLA",
+    "instructions": [
+      "Open the SAN console.",
+      "Set each SFP to maximum link speed.",
+      "Ensure RAID 5 on all disk groups.",
+      "Verify redundant fabric paths are enabled."
+    ],
+    "question": "Which setting is still missing to meet the IOPS SLA?",
+    "options": {
+      "A": "Enable cache mirroring",
+      "B": "Increase SFP link speed",
+      "C": "Configure RAID 5 on all groups",
+      "D": "Enable redundant fabric paths"
+    },
+    "answer": "B",
+    "explanation": "SLA requires maximum SFP link speed; others are already configured."
+  },
+  {
+    "id": 80,
+    "label": "Q80 – HPC Networking",
+    "instructions": "Select the NIC that achieves lowest latency and high throughput for node-to-node traffic.",
+    "question": "Which factor most impacts latency/throughput in an HPC cluster?",
+    "options": { "A": "Node placement", "B": "Node size", "C": "Node NIC", "D": "Node OS" },
+    "answer": "C",
+    "explanation": "NIC choice (e.g., InfiniBand/100GbE) dominates performance."
+  },
+  {
+    "id": 176,
+    "label": "Q176 – API Throttling",
+    "instructions": "Identify which component returns HTTP 429 and implements rate limiting.",
+    "question": "Which issue returns HTTP 429?",
+    "options": { "A": "API throttling", "B": "API gateway outage", "C": "Oversubscription", "D": "Unauthorized access" },
+    "answer": "A",
+    "explanation": "429 = Too Many Requests; typical of throttling."
+  }
+]
+
+with open(os.path.join(base, "notes.json"), "w", encoding="utf-8") as f:
     json.dump(notes, f, indent=2, ensure_ascii=False)
 
-path
+with open(os.path.join(base, "simulation.json"), "w", encoding="utf-8") as f:
+    json.dump(simulations, f, indent=2, ensure_ascii=False)
+
+"/mnt/data ready"
