@@ -439,19 +439,21 @@ const App = () => {
           <button className="btn btn-outline-primary w-100" onClick={openNotes}>Notes</button>
         </div>
 
-        <div>
-          <div className="text-uppercase small text-muted fw-bold mb-2">Simulation</div>
-          <ul className="list-unstyled">
-            {simulations.map((sim) => (
-              <li key={sim.id} className="mb-1">
-                <button className="btn btn-link p-0" onClick={() => openSimulation(sim.id)}>
-                  {sim.label || `Q${sim.id}`}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+    <div className="mb-2">
+      <div className="text-uppercase small text-muted fw-bold mb-2">Simulation</div>
+
+      {simulations.map((sim) => (
+        <button
+          key={sim.id}
+          className="btn btn-outline-primary w-100 text-start mb-2"
+          onClick={() => openSimulation(sim.id)}
+          title={sim.label || `Q${sim.id}`}
+          style={{ whiteSpace: 'normal' }}
+          >
+          {sim.label || `Q${sim.id}`}
+        </button>
+      ))}
+    </div>
       {sidebarOpen && <div className="cp-backdrop" onClick={() => setSidebarOpen(false)} />}
 
       {/* Views */}
