@@ -1,16 +1,265 @@
-[
+import json, textwrap, os, pathlib
+
+notes = [
   {
-    "id": "cloud-models",
-    "title": "Cloud Service Models",
+    "id": "resource-metering",
+    "title": "Resource Metering & Billing",
     "content": [
-      "IaaS: VMs, storage, networking. User manages OS and above.",
-      "PaaS: Managed runtime/build tools, deploy code only.",
-      "SaaS: Complete app delivered over internet."
+      "Tracks and measures actual cloud resource usage (CPU time, storage, bandwidth).",
+      "Enables accurate chargeback/showback and capacity planning.",
+      "Foundation of utility/consumption models (pay-as-you-go)."
     ]
   },
   {
-    "id": "ha-dr",
-    "title": "HA & DR Basics",
-    "content": "AZ = isolated datacenter in a region. Use multi-AZ for HA, cross-region for DR. RPO/RTO drive design."
+    "id": "pricing-models",
+    "title": "Pricing: Pay-as-you-go & Reservations",
+    "content": [
+      "Pay-as-you-go: Only pay for what you use, like a utility bill.",
+      "Dedicated host: Single-tenant physical server assigned to one customer for isolation/control.",
+      "Reserved resources: Commit for 1–3 years to get discounts vs on-demand pricing."
+    ]
+  },
+  {
+    "id": "6r-migration-overview",
+    "title": "Cloud Migration Strategies (6R highlights)",
+    "content": [
+      "Rehost (lift-and-shift): Move as-is; minimal code changes.",
+      "Replatform: Small changes to use managed/cloud features; no full rewrite.",
+      "Refactor: Restructure code/architecture to be cloud-native without changing core function.",
+      "Retain: Keep on-prem/not moving for now (e.g., compliance, latency).",
+      "Retire: Decommission apps with no business value."
+    ]
+  },
+  {
+    "id": "deploy-strategies",
+    "title": "App Deployment Strategies",
+    "content": [
+      "Blue-Green: Two identical prod envs; switch traffic between them for instant cutover/rollback.",
+      "Canary: Release to a small subset first; expand if healthy (reduces blast radius).",
+      "Rolling: Replace instances in batches until all run the new version.",
+      "In-Place (Recreate/Big-Bang): Stop old, deploy new on same infra; simplest but causes downtime."
+    ]
+  },
+  {
+    "id": "container-repos",
+    "title": "Container Repositories",
+    "content": [
+      "Public repos: Pull without authentication (e.g., Docker Hub public images).",
+      "Private repos: Require auth; used for internal/proprietary images."
+    ]
+  },
+  {
+    "id": "uat",
+    "title": "User Acceptance Testing (UAT)",
+    "content": [
+      "Performed before production approval to validate business requirements.",
+      "Confirms the change works for real users in realistic conditions."
+    ]
+  },
+  {
+    "id": "ephemeral-storage",
+    "title": "Ephemeral Storage",
+    "content": [
+      "Temporary/local storage for short-term data; not durable.",
+      "Example: Camera stores incident video locally until uploaded to cloud, then deletes local copy.",
+      "Not suitable for per-user persistent quotas."
+    ]
+  },
+  {
+    "id": "rest-soap",
+    "title": "REST vs SOAP (API Styles)",
+    "content": [
+      "REST: Architectural style using HTTP verbs (GET, POST, PUT, DELETE).",
+      "SOAP: Protocol using XML envelopes over HTTP/SMTP/etc; strict contracts."
+    ]
+  },
+  {
+    "id": "event-driven",
+    "title": "Event-Driven Architecture",
+    "content": [
+      "Actions are triggered by events (file uploaded, message published).",
+      "Great for automation, decoupling, and reactive workflows."
+    ]
+  },
+  {
+    "id": "authn-authz-basics",
+    "title": "Auth Basics: MFA, OAuth2, OIDC, SSO",
+    "content": [
+      "MFA: Require two or more factors (password + phone/token).",
+      "OAuth 2.0: Authorization framework (delegates access); not authentication by itself.",
+      "OIDC: Identity layer on top of OAuth 2.0 that provides authentication.",
+      "SSO: Single login for multiple apps; does not guarantee MFA.",
+      "Storage quotas: Enforce per-user limits (e.g., 10 GB each)."
+    ]
+  },
+  {
+    "id": "snapshots-backups",
+    "title": "Snapshots vs Backups",
+    "content": [
+      "Snapshot: Point-in-time state; often depends on original storage; not a full backup.",
+      "Can grow quickly if many changes; manage/expire them to avoid storage bloat."
+    ]
+  },
+  {
+    "id": "backup-types",
+    "title": "Backup Types",
+    "content": [
+      "Full: Copy all data; slowest and largest.",
+      "Differential: Changes since last full; grows until next full.",
+      "Incremental: Changes since last backup (full or incremental); most storage-efficient."
+    ]
+  },
+  {
+    "id": "storage-bloat",
+    "title": "Storage Bloat: Causes",
+    "content": [
+      "Redundant copies/backups; unmanaged snapshots/logs; temp files.",
+      "Inefficient schedules (too many full backups)."
+    ]
+  },
+  {
+    "id": "colocation-replication",
+    "title": "Colocation & Off-Site Replication",
+    "content": [
+      "Colocation: Rent space in a 3rd-party data center for your hardware (power, cooling, security).",
+      "Off-site: Data stored in a separate location; replication copies data there for resiliency.",
+      "On-site only is risky for natural disasters; retention = how long data is kept."
+    ]
+  },
+  {
+    "id": "vuln-mgmt",
+    "title": "Vulnerability Management Flow",
+    "content": [
+      "Identification: Discover potential weaknesses.",
+      "Scanning: Active probing to detect vulnerabilities (part of identification).",
+      "Assessment: Prioritize by likelihood/impact.",
+      "Remediation: Fix or mitigate the issues."
+    ]
+  },
+  {
+    "id": "vuln-scoring",
+    "title": "Vuln Scoring & Catalogs",
+    "content": [
+      "CVSS: Standard severity scoring (0.0–10.0).",
+      "CVE: Public list of known vulnerabilities (IDs + descriptions).",
+      "CWE: Catalog of common weakness types (design/implementation flaws).",
+      "CWSS: Scores software weaknesses (less widely adopted)."
+    ]
+  },
+  {
+    "id": "git-basics",
+    "title": "Git Basics",
+    "content": [
+      "git fetch: Download remote changes; don’t merge.",
+      "git pull: Fetch + merge into current branch.",
+      "git commit: Record staged changes locally with a message.",
+      "git push: Upload local commits to the remote."
+    ]
+  },
+  {
+    "id": "rdbms-sql-mysql",
+    "title": "RDBMS vs SQL vs MySQL",
+    "content": [
+      "RDBMS: Software to manage relational databases (e.g., MySQL, PostgreSQL).",
+      "SQL: Query language used with RDBMS.",
+      "MySQL: An RDBMS that uses SQL; SQL itself is not a database."
+    ]
+  },
+  {
+    "id": "reserved-instances",
+    "title": "Reserved VM Instances",
+    "content": [
+      "Commit to specific VM types for 1–3 years to get significant discounts vs on-demand."
+    ]
+  },
+  {
+    "id": "ssd-write-intensive",
+    "title": "Write-Intensive SSDs",
+    "content": [
+      "Optimized for heavy write workloads; higher endurance and sustained write performance."
+    ]
+  },
+  {
+    "id": "cdn",
+    "title": "Content Delivery Network (CDN)",
+    "content": [
+      "Caches content at edge locations near users.",
+      "Improves latency, throughput, and availability for static assets/media."
+    ]
+  },
+  {
+    "id": "token-auth",
+    "title": "Token-Based Authentication",
+    "content": [
+      "After login, client receives a token and reuses it for subsequent requests.",
+      "Reduces repeated credential entry; commonly implemented with JWTs."
+    ]
+  },
+  {
+    "id": "rbac",
+    "title": "RBAC (Role-Based Access Control)",
+    "content": [
+      "Permissions are attached to roles; users receive roles.",
+      "Easier to manage at scale; follow least-privilege via role design."
+    ]
+  },
+  {
+    "id": "dac",
+    "title": "DAC (Discretionary Access Control)",
+    "content": [
+      "Resource owner decides who can access and what actions they can perform.",
+      "Contrasts with MAC (policy-driven central control)."
+    ]
+  },
+  {
+    "id": "api-paradigms",
+    "title": "API Paradigms: REST, GraphQL, RPC",
+    "content": [
+      "REST: Resource-oriented, multiple endpoints, HTTP verbs.",
+      "GraphQL: Single endpoint; clients query exactly the data they need.",
+      "RPC: Call functions remotely as if local; procedure-centric."
+    ]
+  },
+  {
+    "id": "mysql-port",
+    "title": "Default MySQL Port",
+    "content": [
+      "TCP 3306 (also used by MariaDB)."
+    ]
+  },
+  {
+    "id": "accessibility-vision",
+    "title": "Accessibility: Visually Impaired",
+    "content": [
+      "Reduced eyesight not fully correctable by glasses/contacts/medication/surgery.",
+      "Design UIs with high contrast, keyboard navigation, and screen-reader support."
+    ]
+  },
+  {
+    "id": "ocr",
+    "title": "Optical Character Recognition (OCR)",
+    "content": [
+      "Converts images/scans of text into machine-readable text (e.g., scanned receipts)."
+    ]
+  },
+  {
+    "id": "sentiment-analysis",
+    "title": "Sentiment Analysis",
+    "content": [
+      "NLP/ML technique to detect the emotional tone of text (positive, negative, neutral)."
+    ]
+  },
+  {
+    "id": "visual-recognition",
+    "title": "Visual Recognition",
+    "content": [
+      "Identify objects/scenes/people from images; compare against known patterns."
+    ]
   }
 ]
+
+path = "/mnt/data/notes.json"
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(notes, f, indent=2, ensure_ascii=False)
+
+path
