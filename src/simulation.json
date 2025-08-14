@@ -1,0 +1,40 @@
+[
+  {
+    "id": 74,
+    "label": "Q74 – Storage Throughput SLA",
+    "instructions": [
+      "Open the SAN console (left pane).",
+      "Set each SFP to maximum link speed.",
+      "Ensure RAID 5 on all disk groups.",
+      "Verify redundant fabric paths are enabled."
+    ],
+    "question": "Which setting is still missing to meet the IOPS SLA?",
+    "options": {
+      "A": "Enable cache mirroring",
+      "B": "Increase SFP link speed",
+      "C": "Configure RAID 5 on all groups",
+      "D": "Enable redundant fabric paths"
+    },
+    "answer": "B",
+    "explanation": "SLA requires maximum SFP link speed; others are already set.",
+    "image": "q74.png"
+  },
+  {
+    "id": 80,
+    "label": "Q80 – HPC Networking",
+    "instructions": "Choose the NIC that provides the lowest latency and highest throughput for node-to-node.",
+    "question": "Which factor most impacts latency/throughput in an HPC cluster?",
+    "options": { "A": "Node placement", "B": "Node size", "C": "Node NIC", "D": "Node OS" },
+    "answer": "C",
+    "explanation": "NIC (e.g., InfiniBand/100GbE) is the key factor."
+  },
+  {
+    "id": 176,
+    "label": "Q176 – API Throttling",
+    "instructions": "Identify which component is responsible for 429 responses and rate limiting.",
+    "question": "Which issue returns HTTP 429?",
+    "options": { "A": "API throttling", "B": "API gateway outage", "C": "Oversubscription", "D": "Unauthorized access" },
+    "answer": "A",
+    "explanation": "429 = Too Many Requests, typically from throttling."
+  }
+]
