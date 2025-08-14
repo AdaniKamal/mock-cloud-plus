@@ -445,7 +445,7 @@ const App = () => {
       {simulations.map((sim) => (
         <button
           key={sim.id}
-          className="btn btn-outline-primary w-100 text-start mb-2"
+          className="btn btn-primary w-100 text-start mb-2"
           onClick={() => openSimulation(sim.id)}
           title={sim.label || `Q${sim.id}`}
           style={{ whiteSpace: 'normal' }}
