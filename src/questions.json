@@ -1390,10 +1390,14 @@
     "question": "A cloud networking engineer is troubleshooting the corporate office's network configuration. Employees in the IT and operations departments are unable to resolve IP addresses on all devices, and the IT department cannot establish a connection to other departments' subnets. The engineer identifies the following configuration currently in place to support the office network:\nEach employee needs to connect to the network with a maximum of three hosts. Each subnet must be segregated, but the IT department must have the ability to communicate with all subnets. Which of the following meet the IP addressing and routing requirements? (Select two).",
     "image": "q118.png",
     "options": {
-      "A": "",
-      "B": "",
-      "C": "",
-      "D": ""
+      "A": "Modifying the subnet mask to 255 255 254.0 for IT and operations departments",
+      "B": "Configuring static routing to allow access from each subnet to 10.1.40.1",
+      "C": "Modifying the BYOD policy to reduce the volume of devices that are allowed to connect to the
+corporate network",
+      "D": "Configuring static routing to allow access from 10.1.30.1 to each subnet",
+      "E": "Combining the subnets and increasing the allocation of IP addresses available to support three hosts for
+each employee",
+      "F": "Modifying the subnet mask to 255.255.255.128 for the IT and operations departments"
     },
     "answer": ["A", "D"],
     "explanation": null
