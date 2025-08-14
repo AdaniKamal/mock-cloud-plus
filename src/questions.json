@@ -1315,7 +1315,7 @@
   },
   {
     "id": 112,
-    "question": "A cloud engineer is designing a cloud-native, three-tier application. The engineer must adhere to the \nfollowing security best practices:\n - Minimal services should run on all layers of the stack.\n - The solution should be vendor agnostic.\n - Virealization could be used over physical hardware. \nWhich of the following concepts should the engineer use to design the system to best meet these requirements?",
+    "question": "A cloud engineer is designing a cloud-native, three-tier application. The engineer must adhere to the \nfollowing security best practices:\n - Minimal services should run on all layers of the stack.\n - The solution should be vendor agnostic.\n - Virealization could be used over physical hardware. \n Which of the following concepts should the engineer use to design the system to best meet these requirements?",
     "options": {
       "A": "Virtual machine",
       "B": "Micro services",
@@ -1327,7 +1327,7 @@
   },
   {
     "id": 113,
-    "question": "A cloud deployment uses three different VPCs. The subnets on each VPC need to communicate with the \nothers over private channels. Which of the following will achieve this objective?\n\n\n\n",
+    "question": "A cloud deployment uses three different VPCs. The subnets on each VPC need to communicate with the others over private channels. Which of the following will achieve this objective?",
     "options": {
       "A": "Deploying a load balancer to send traffic to the private IP addresses",
       "B": "Creating peering connections between all VPCs",
