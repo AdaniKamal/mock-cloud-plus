@@ -39,3 +39,32 @@ body.dark-mode .btn-success {
 body.dark-mode .form-check-label {
   color: #ccc;
 }
+
+/* Slide-in sidebar overlay (ChatGPT style) */
+.cp-sidebar{
+  position:fixed;
+  top:0; left:0;
+  width:min(320px, 90vw);
+  height:100vh;
+  background:var(--bs-body-bg);
+  border-right:1px solid rgba(0,0,0,.1);
+  box-shadow:0 0 30px rgba(0,0,0,.15);
+  transform:translateX(-100%);
+  transition:transform .25s ease;
+  z-index:1040;          /* above page content */
+  padding:16px;
+  overflow-y:auto;
+}
+body.dark-mode .cp-sidebar{
+  background:#121212;
+  border-right-color:rgba(255,255,255,.08);
+}
+.cp-sidebar.open{ transform:translateX(0); }
+
+.cp-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:1030;          /* just below sidebar */
+}
+
