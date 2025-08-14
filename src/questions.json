@@ -824,7 +824,7 @@
   },
   {
     "id": 69,
-    "question": "Which of the following network protocols is generally used in a NAS environment?\n\n\n\n",
+    "question": "Which of the following network protocols is generally used in a NAS environment?",
     "options": {
       "A": "BGP",
       "B": "RDP",
