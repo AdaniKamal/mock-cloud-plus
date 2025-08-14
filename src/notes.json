@@ -1,7 +1,4 @@
-import json, os, textwrap, zipfile, shutil, pathlib, io
-
-base = "/mnt/data"
-notes = [
+[
   {
     "id": "resource-metering",
     "title": "Resource Metering & Billing",
@@ -78,7 +75,7 @@ notes = [
     "id": "event-driven",
     "title": "Event-Driven Architecture",
     "content": [
-      "Actions triggered by events (e.g., file upload).",
+      "Actions are triggered by events (e.g., file upload).",
       "Great for automation and decoupling."
     ]
   },
@@ -87,7 +84,7 @@ notes = [
     "title": "Auth: MFA, OAuth2, OIDC, SSO & Quotas",
     "content": [
       "MFA: Two or more factors (password + phone/token).",
-      "OAuth2: Authorization framework; not authentication by itself.",
+      "OAuth2: Authorization; not authentication by itself.",
       "OIDC: Identity layer on OAuth2 that provides authentication.",
       "SSO: One login for many apps; does not imply MFA.",
       "Storage quotas: Enforce per-user limits (e.g., 10 GB)."
@@ -138,157 +135,4 @@ notes = [
     "id": "vuln-scoring",
     "title": "Vulnerability Scoring & Catalogs",
     "content": [
-      "CVSS: Severity score (0.0–10.0).",
-      "CVE: Known vulnerabilities (IDs + descriptions).",
-      "CWE: Weakness categories (design/implementation flaws).",
-      "CWSS: Scores weaknesses (less adopted)."
-    ]
-  },
-  {
-    "id": "git",
-    "title": "Git Basics",
-    "content": [
-      "fetch: Download remote refs; no merge.",
-      "pull: fetch + merge into current branch.",
-      "commit: Record staged changes locally.",
-      "push: Upload local commits to remote."
-    ]
-  },
-  {
-    "id": "rdbms-sql",
-    "title": "RDBMS vs SQL vs MySQL",
-    "content": [
-      "RDBMS: DB engine (MySQL/Postgres).",
-      "SQL: Query language for RDBMS.",
-      "MySQL: An RDBMS that uses SQL."
-    ]
-  },
-  {
-    "id": "reserved-vms",
-    "title": "Reserved VM Instances",
-    "content": [
-      "Commit to VM sizes for 1–3 years for big discounts vs on-demand."
-    ]
-  },
-  {
-    "id": "write-intensive-ssd",
-    "title": "Write-Intensive SSDs",
-    "content": [
-      "High endurance and sustained writes for heavy ingest workloads."
-    ]
-  },
-  {
-    "id": "cdn",
-    "title": "CDN (Content Delivery Network)",
-    "content": [
-      "Caches content near users to reduce latency and improve performance/availability."
-    ]
-  },
-  {
-    "id": "token-auth",
-    "title": "Token-Based Authentication",
-    "content": [
-      "Issue a token after login; reuse token for protected requests (e.g., JWT)."
-    ]
-  },
-  {
-    "id": "rbac",
-    "title": "RBAC – Role-Based Access Control",
-    "content": [
-      "Assign permissions to roles; users receive roles; enables least-privilege at scale."
-    ]
-  },
-  {
-    "id": "dac",
-    "title": "DAC – Discretionary Access Control",
-    "content": [
-      "Resource owner decides access and allowed actions.",
-      "Differs from MAC (central policy enforcement)."
-    ]
-  },
-  {
-    "id": "api-paradigms",
-    "title": "API Paradigms: REST, GraphQL, RPC",
-    "content": [
-      "REST: Resource-oriented, multiple endpoints.",
-      "GraphQL: Single endpoint; client specifies data shape.",
-      "RPC: Call remote functions like local procedures."
-    ]
-  },
-  {
-    "id": "mysql-port",
-    "title": "Default MySQL Port",
-    "content": ["TCP 3306 (also MariaDB)."]
-  },
-  {
-    "id": "a11y-vision",
-    "title": "Accessibility: Visually Impaired",
-    "content": [
-      "Reduced eyesight not fully correctable by glasses/contacts/medication/surgery.",
-      "Design for contrast, keyboard nav, and screen readers."
-    ]
-  },
-  {
-    "id": "ocr",
-    "title": "OCR – Optical Character Recognition",
-    "content": ["Converts scanned images of text into machine-readable text."]
-  },
-  {
-    "id": "sentiment",
-    "title": "Sentiment Analysis",
-    "content": ["NLP/ML to detect sentiment (positive/negative/neutral)."]
-  },
-  {
-    "id": "visual-recognition",
-    "title": "Visual Recognition",
-    "content": ["Identify objects/scenes/people from images via pattern matching/ML."]
-  }
-]
-
-simulations = [
-  {
-    "id": 74,
-    "label": "Q74 – Storage Throughput SLA",
-    "instructions": [
-      "Open the SAN console.",
-      "Set each SFP to maximum link speed.",
-      "Ensure RAID 5 on all disk groups.",
-      "Verify redundant fabric paths are enabled."
-    ],
-    "question": "Which setting is still missing to meet the IOPS SLA?",
-    "options": {
-      "A": "Enable cache mirroring",
-      "B": "Increase SFP link speed",
-      "C": "Configure RAID 5 on all groups",
-      "D": "Enable redundant fabric paths"
-    },
-    "answer": "B",
-    "explanation": "SLA requires maximum SFP link speed; others are already configured."
-  },
-  {
-    "id": 80,
-    "label": "Q80 – HPC Networking",
-    "instructions": "Select the NIC that achieves lowest latency and high throughput for node-to-node traffic.",
-    "question": "Which factor most impacts latency/throughput in an HPC cluster?",
-    "options": { "A": "Node placement", "B": "Node size", "C": "Node NIC", "D": "Node OS" },
-    "answer": "C",
-    "explanation": "NIC choice (e.g., InfiniBand/100GbE) dominates performance."
-  },
-  {
-    "id": 176,
-    "label": "Q176 – API Throttling",
-    "instructions": "Identify which component returns HTTP 429 and implements rate limiting.",
-    "question": "Which issue returns HTTP 429?",
-    "options": { "A": "API throttling", "B": "API gateway outage", "C": "Oversubscription", "D": "Unauthorized access" },
-    "answer": "A",
-    "explanation": "429 = Too Many Requests; typical of throttling."
-  }
-]
-
-with open(os.path.join(base, "notes.json"), "w", encoding="utf-8") as f:
-    json.dump(notes, f, indent=2, ensure_ascii=False)
-
-with open(os.path.join(base, "simulation.json"), "w", encoding="utf-8") as f:
-    json.dump(simulations, f, indent=2, ensure_ascii=False)
-
-"/mnt/data ready"
+      "CVSS: Sever
