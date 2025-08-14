@@ -1,8 +1,8 @@
-// src/App.jsx
+// src/App.js
 import React, { useState, useEffect } from 'react';
 import questions from './questions.json';
-import notesData from './notes.json';          // NEW
-import simulations from './simulation.json';   // NEW
+import notesData from './notes.json';
+import simulations from './simulation.json';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 import { FaSun, FaMoon } from 'react-icons/fa';
@@ -17,7 +17,7 @@ const getRandomQuestions = (data, count = 50) => {
   }));
 };
 
-const App = () => {
+function App() {
   const [sessionQuestions, setSessionQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [visited, setVisited] = useState({});
@@ -42,6 +42,8 @@ const App = () => {
     setScoreHistory(history);
   }, []);
 
+  // Timer
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (view === 'exam' && timeLeft > 0 && !submitted) {
       const timer = setTimeout(() => {
@@ -427,44 +429,44 @@ const App = () => {
   };
 
   return (
-  <>
-    {/* Fixed, slide-in sidebar overlay */}
-    <div className={`cp-sidebar ${sidebarOpen ? 'open' : ''}`}>
-      <div className="d-flex justify-content-between align-items-center mb-2">
-        <h5 className="m-0">Resources</h5>
-        <button className="btn btn-sm btn-light" onClick={() => setSidebarOpen(false)}>✕</button>
+    <>
+      {/* Fixed, slide-in sidebar overlay */}
+      <div className={`cp-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h5 className="m-0">Resources</h5>
+          <button className="btn btn-sm btn-light" onClick={() => setSidebarOpen(false)}>✕</button>
+        </div>
+
+        <div className="mb-3">
+          <button className="btn btn-outline-primary w-100" onClick={openNotes}>Notes</button>
+        </div>
+
+        <div className="mb-2">
+          <div className="text-uppercase small text-muted fw-bold mb-2">Simulation</div>
+          {simulations.map((sim) => (
+            <button
+              key={sim.id}
+              className="btn btn-primary w-100 text-start mb-2"
+              onClick={() => openSimulation(sim.id)}
+              title={sim.label || `Q${sim.id}`}
+              style={{ whiteSpace: 'normal' }}
+            >
+              {sim.label || `Q${sim.id}`}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="mb-3">
-        <button className="btn btn-outline-primary w-100" onClick={openNotes}>Notes</button>
-      </div>
+      {sidebarOpen && <div className="cp-backdrop" onClick={() => setSidebarOpen(false)} />}
 
-      <div className="mb-2">
-        <div className="text-uppercase small text-muted fw-bold mb-2">Simulation</div>
-        {simulations.map((sim) => (
-          <button
-            key={sim.id}
-            className="btn btn-primary w-100 text-start mb-2"
-            onClick={() => openSimulation(sim.id)}
-            title={sim.label || `Q${sim.id}`}
-            style={{ whiteSpace: 'normal' }}
-          >
-            {sim.label || `Q${sim.id}`}
-          </button>
-        ))}
-      </div>
-    </div> {/* <-- this was missing */}
-
-    {sidebarOpen && <div className="cp-backdrop" onClick={() => setSidebarOpen(false)} />}
-
-    {/* Views */}
-    {view === 'home' && renderHome()}
-    {view === 'exam' && renderExam()}
-    {view === 'results' && renderResults()}
-    {view === 'notes' && renderNotes()}
-    {view === 'simulation' && renderSimulation()}
-  </>
-);
-};
+      {/* Views */}
+      {view === 'home' && renderHome()}
+      {view === 'exam' && renderExam()}
+      {view === 'results' && renderResults()}
+      {view === 'notes' && renderNotes()}
+      {view === 'simulation' && renderSimulation()}
+    </>
+  );
+}
 
 export default App;
