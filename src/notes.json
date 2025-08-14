@@ -1,0 +1,16 @@
+[
+  {
+    "id": "cloud-models",
+    "title": "Cloud Service Models",
+    "content": [
+      "IaaS: VMs, storage, networking. User manages OS and above.",
+      "PaaS: Managed runtime/build tools, deploy code only.",
+      "SaaS: Complete app delivered over internet."
+    ]
+  },
+  {
+    "id": "ha-dr",
+    "title": "HA & DR Basics",
+    "content": "AZ = isolated datacenter in a region. Use multi-AZ for HA, cross-region for DR. RPO/RTO drive design."
+  }
+]
