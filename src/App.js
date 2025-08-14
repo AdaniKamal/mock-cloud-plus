@@ -427,43 +427,44 @@ const App = () => {
   };
 
   return (
-    <>
-      {/* Fixed, slide-in sidebar overlay */}
-      <div className={`cp-sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h5 className="m-0">Resources</h5>
-          <button className="btn btn-sm btn-light" onClick={() => setSidebarOpen(false)}>✕</button>
-        </div>
+  <>
+    {/* Fixed, slide-in sidebar overlay */}
+    <div className={`cp-sidebar ${sidebarOpen ? 'open' : ''}`}>
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h5 className="m-0">Resources</h5>
+        <button className="btn btn-sm btn-light" onClick={() => setSidebarOpen(false)}>✕</button>
+      </div>
 
-        <div className="mb-3">
-          <button className="btn btn-outline-primary w-100" onClick={openNotes}>Notes</button>
-        </div>
+      <div className="mb-3">
+        <button className="btn btn-outline-primary w-100" onClick={openNotes}>Notes</button>
+      </div>
 
-    <div className="mb-2">
-      <div className="text-uppercase small text-muted fw-bold mb-2">Simulation</div>
-
-      {simulations.map((sim) => (
-        <button
-          key={sim.id}
-          className="btn btn-primary w-100 text-start mb-2"
-          onClick={() => openSimulation(sim.id)}
-          title={sim.label || `Q${sim.id}`}
-          style={{ whiteSpace: 'normal' }}
+      <div className="mb-2">
+        <div className="text-uppercase small text-muted fw-bold mb-2">Simulation</div>
+        {simulations.map((sim) => (
+          <button
+            key={sim.id}
+            className="btn btn-primary w-100 text-start mb-2"
+            onClick={() => openSimulation(sim.id)}
+            title={sim.label || `Q${sim.id}`}
+            style={{ whiteSpace: 'normal' }}
           >
-          {sim.label || `Q${sim.id}`}
-        </button>
-      ))}
-    </div>
-      {sidebarOpen && <div className="cp-backdrop" onClick={() => setSidebarOpen(false)} />}
+            {sim.label || `Q${sim.id}`}
+          </button>
+        ))}
+      </div>
+    </div> {/* <-- this was missing */}
 
-      {/* Views */}
-      {view === 'home' && renderHome()}
-      {view === 'exam' && renderExam()}
-      {view === 'results' && renderResults()}
-      {view === 'notes' && renderNotes()}
-      {view === 'simulation' && renderSimulation()}
-    </>
-  );
+    {sidebarOpen && <div className="cp-backdrop" onClick={() => setSidebarOpen(false)} />}
+
+    {/* Views */}
+    {view === 'home' && renderHome()}
+    {view === 'exam' && renderExam()}
+    {view === 'results' && renderResults()}
+    {view === 'notes' && renderNotes()}
+    {view === 'simulation' && renderSimulation()}
+  </>
+);
 };
 
 export default App;
