@@ -443,7 +443,7 @@
       "C": "A new user was created on the web server by the attacker.",
       "D": "Sensitive information from the corporate web server was leaked."
     },
-    "answer": null,
+    "answer": "D",
     "explanation": null
   },
   {
@@ -807,7 +807,7 @@
       "C": "Ask the users to monitor the quarterly updates.",
       "D": "Revert the application to the last stable quarterly release."
     },
-    "answer": null,
+    "answer": "A",
     "explanation": null
   },
   {
@@ -1971,7 +1971,7 @@
       "C": "Rolling",
       "D": "In-place"
     },
-    "answer": null,
+    "answer": "A",
     "explanation": null
   },
   {
@@ -2068,7 +2068,7 @@
       "C": "XaaS",
       "D": "laaS"
     },
-    "answer": null,
+    "answer": "B",
     "explanation": null
   },
   {
@@ -2081,7 +2081,7 @@
       "C": "CRM server patching",
       "D": "CRM development life cycle"
     },
-    "answer": null,
+    "answer": "A",
     "explanation": null
   },
   {
