@@ -33,6 +33,31 @@ const App = () => {
   document.body.classList.toggle('dark-mode', darkMode);
   }, [darkMode]);
 
+  const handleSubmit = useCallback(() => {
+  setSubmitted(true);
+
+  const score = sessionQuestions.reduce((acc, q) => {
+    const correct = q.answer;
+    const user = answers[q.id];
+
+    if (Array.isArray(correct)) {
+      return acc + (
+        Array.isArray(user) &&
+        [...correct].sort().join() === [...user].sort().join()
+          ? 1
+          : 0
+      );
+    } else {
+      return acc + (user === correct ? 1 : 0);
+    }
+  }, 0);
+
+  const updatedHistory = [...scoreHistory, score];
+  setScoreHistory(updatedHistory);
+  localStorage.setItem('scoreHistory', JSON.stringify(updatedHistory));
+  setView('results');
+}, [sessionQuestions, answers, scoreHistory]);
+
   useEffect(() => {
     const history = JSON.parse(localStorage.getItem('scoreHistory') || '[]');
     setScoreHistory(history);
@@ -91,26 +116,6 @@ const App = () => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
   };
 
-  const handleSubmit = useCallback(() => {
-  setSubmitted(true);
-
-  const score = sessionQuestions.reduce((acc, q) => {
-    const correct = q.answer;
-    const user = answers[q.id];
-
-    if (Array.isArray(correct)) {
-      return acc + (Array.isArray(user) && [...correct].sort().join() === [...user].sort().join() ? 1 : 0);
-    } else {
-      return acc + (user === correct ? 1 : 0);
-    }
-  }, 0);
-
-  const updatedHistory = [...scoreHistory, score];
-  setScoreHistory(updatedHistory);
-  localStorage.setItem('scoreHistory', JSON.stringify(updatedHistory));
-  setView('results');
-}, [sessionQuestions, answers, scoreHistory]);
-
 const renderHome = () => (
   <div className="container min-vh-100 d-flex flex-column justify-content-center align-items-center text-center py-4">
     {/* Logo di atas tajuk */}
@@ -165,7 +170,6 @@ const renderHome = () => (
     </div>
   </div>
 );
-
 
   const renderProgress = () => (
     <div className="d-flex flex-wrap gap-2 mb-3">
