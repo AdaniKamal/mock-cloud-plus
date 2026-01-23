@@ -1,4 +1,4 @@
-// cloudplus_mock_exam/src/App.jsx
+// src/App.js
 import React, { useState, useEffect, useCallback } from 'react';
 import questions from './questions.json';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -29,53 +29,16 @@ const App = () => {
   const [timeLeft, setTimeLeft] = useState(70 * 60);
   const [darkMode, setDarkMode] = useState(false);
 
+  // Dark mode body class
   useEffect(() => {
-  document.body.classList.toggle('dark-mode', darkMode);
+    document.body.classList.toggle('dark-mode', darkMode);
   }, [darkMode]);
 
-  const handleSubmit = useCallback(() => {
-  setSubmitted(true);
-
-  const score = sessionQuestions.reduce((acc, q) => {
-    const correct = q.answer;
-    const user = answers[q.id];
-
-    if (Array.isArray(correct)) {
-      return acc + (
-        Array.isArray(user) &&
-        [...correct].sort().join() === [...user].sort().join()
-          ? 1
-          : 0
-      );
-    } else {
-      return acc + (user === correct ? 1 : 0);
-    }
-  }, 0);
-
-  const updatedHistory = [...scoreHistory, score];
-  setScoreHistory(updatedHistory);
-  localStorage.setItem('scoreHistory', JSON.stringify(updatedHistory));
-  setView('results');
-}, [sessionQuestions, answers, scoreHistory]);
-
+  // Load history once
   useEffect(() => {
     const history = JSON.parse(localStorage.getItem('scoreHistory') || '[]');
     setScoreHistory(history);
   }, []);
-
-  useEffect(() => {
-    if (view === 'exam' && timeLeft > 0 && !submitted) {
-      const timer = setTimeout(() => {
-        if (timeLeft === 300) new Audio('/alert.mp3').play();
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (view === 'exam' && timeLeft === 0 && !submitted) {
-      if (window.confirm("Time is up! Auto-submitting your answers.")) {
-        handleSubmit();
-      }
-    }
-  }, [view, timeLeft, submitted, handleSubmit]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -107,69 +70,114 @@ const App = () => {
   };
 
   const handleNext = () => {
-    setVisited({ ...visited, [sessionQuestions[currentIndex].id]: true });
+    if (sessionQuestions[currentIndex]) {
+      setVisited({ ...visited, [sessionQuestions[currentIndex].id]: true });
+    }
     setCurrentIndex((prev) => Math.min(prev + 1, sessionQuestions.length - 1));
   };
 
   const handlePrev = () => {
-    setVisited({ ...visited, [sessionQuestions[currentIndex].id]: true });
+    if (sessionQuestions[currentIndex]) {
+      setVisited({ ...visited, [sessionQuestions[currentIndex].id]: true });
+    }
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
   };
 
-const renderHome = () => (
-  <div className="container min-vh-100 d-flex flex-column justify-content-center align-items-center text-center py-4">
-    {/* Logo di atas tajuk */}
-    <img
-      src="/comptia-logo.svg"
-      alt="CompTIA"
-      style={{ height: '48px' }}
-      className="mb-2"
-    />
+  // ✅ useCallback so ESLint is happy in CI
+  const handleSubmit = useCallback(() => {
+    setSubmitted(true);
 
-    {/* Tajuk + toggle dark mode */}
-    <div className="mb-4 d-flex flex-wrap justify-content-center align-items-center gap-3">
-      <h1 className="fw-bold m-0">Mock Cloud+ Exam</h1>
-      <button
-        onClick={() => setDarkMode(!darkMode)}
-        className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
-        style={{ width: '40px', height: '40px' }}
-        title="Toggle Dark Mode"
-      >
-        {darkMode ? <FaSun /> : <FaMoon />}
-      </button>
-    </div>
+    const score = sessionQuestions.reduce((acc, q) => {
+      const correct = q.answer;
+      const user = answers[q.id];
 
-    {/* Start button */}
-    <div className="text-center mt-2">
-      <button onClick={startExam} className="btn btn-primary btn-lg">Ready? Start Test</button>
-    </div>
+      if (Array.isArray(correct)) {
+        const correctSorted = [...correct].sort().join();
+        const userSorted = Array.isArray(user) ? [...user].sort().join() : '';
+        return acc + (correctSorted === userSorted ? 1 : 0);
+      }
 
-    {/* History (masih centered) */}
-    <div className="mt-5" style={{ maxWidth: 720 }}>
-      <h2 className="fw-bold">History</h2>
-      {scoreHistory.length === 0 ? (
-        <p>No attempts yet.</p>
-      ) : (
-        <>
-          <ul className="list-unstyled">
-            {scoreHistory.map((s, i) => (
-              <li key={i}>Take {i + 1}: {s}/50</li>
-            ))}
-          </ul>
-          <button
-            className="btn btn-danger"
-            onClick={() => {
-              localStorage.removeItem('scoreHistory');
-              setScoreHistory([]);
-            }}
-          >
-            Reset History
-          </button>
-        </>
-      )}
+      return acc + (user === correct ? 1 : 0);
+    }, 0);
+
+    const updatedHistory = [...scoreHistory, score];
+    setScoreHistory(updatedHistory);
+    localStorage.setItem('scoreHistory', JSON.stringify(updatedHistory));
+    setView('results');
+  }, [sessionQuestions, answers, scoreHistory]);
+
+  // Timer + auto submit
+  useEffect(() => {
+    if (view === 'exam' && timeLeft > 0 && !submitted) {
+      const timer = setTimeout(() => {
+        if (timeLeft === 300) new Audio('/alert.mp3').play();
+        setTimeLeft((t) => t - 1);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+
+    if (view === 'exam' && timeLeft === 0 && !submitted) {
+      if (window.confirm('Time is up! Auto-submitting your answers.')) {
+        handleSubmit();
+      }
+    }
+  }, [view, timeLeft, submitted, handleSubmit]);
+
+  const renderHome = () => (
+    <div className="container min-vh-100 d-flex flex-column justify-content-center align-items-center text-center py-4">
+      <img
+        src="/comptia-logo.svg"
+        alt="CompTIA"
+        style={{ height: '48px' }}
+        className="mb-2"
+      />
+
+      <div className="mb-4 d-flex flex-wrap justify-content-center align-items-center gap-3">
+        <h1 className="fw-bold m-0">Mock Cloud+ Exam</h1>
+        <button
+          onClick={() => setDarkMode((d) => !d)}
+          className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+          style={{ width: '40px', height: '40px' }}
+          title="Toggle Dark Mode"
+        >
+          {darkMode ? <FaSun /> : <FaMoon />}
+        </button>
+      </div>
+
+      <div className="text-center mt-2">
+        <button onClick={startExam} className="btn btn-primary btn-lg">
+          Ready? Start Test
+        </button>
+      </div>
+
+      <div className="mt-5" style={{ maxWidth: 720 }}>
+        <h2 className="fw-bold">History</h2>
+        {scoreHistory.length === 0 ? (
+          <p>No attempts yet.</p>
+        ) : (
+          <>
+            <ul className="list-unstyled">
+              {scoreHistory.map((s, i) => (
+                <li key={i}>
+                  Take {i + 1}: {s}/50
+                </li>
+              ))}
+            </ul>
+            <button
+              className="btn btn-danger"
+              onClick={() => {
+                localStorage.removeItem('scoreHistory');
+                setScoreHistory([]);
+              }}
+            >
+              Reset History
+            </button>
+          </>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
 
   const renderProgress = () => (
     <div className="d-flex flex-wrap gap-2 mb-3">
@@ -177,6 +185,7 @@ const renderHome = () => (
         const answered = answers[q.id];
         const seen = visited[q.id];
         const symbol = answered ? '✔' : seen ? '✖' : '□';
+
         return (
           <span
             key={q.id}
@@ -193,20 +202,38 @@ const renderHome = () => (
 
   const renderExam = () => {
     const q = sessionQuestions[currentIndex];
+    if (!q) return null;
+
     const isMulti = Array.isArray(q.answer);
+
     return (
       <div className="container py-4">
         <h1>Mock Cloud+ Exam</h1>
         <p className="fw-bold">Time Left: {formatTime(timeLeft)}</p>
+
         {renderProgress()}
+
         <div key={q.id} className="mb-4">
-          <p><strong>
-            {currentIndex + 1}.{' '}
-            {q.question.split('\n').map((line, i) => (
-              <span key={i}>{line}<br /></span>
-            ))}
-          </strong></p>
-          {q.image && <img src={`/images/${q.image}`} alt={`Question ${q.id}`} className="img-fluid my-3" />}
+          <p>
+            <strong>
+              {currentIndex + 1}.{' '}
+              {q.question.split('\n').map((line, i) => (
+                <span key={i}>
+                  {line}
+                  <br />
+                </span>
+              ))}
+            </strong>
+          </p>
+
+          {q.image && (
+            <img
+              src={`/images/${q.image}`}
+              alt={`Question ${q.id}`}
+              className="img-fluid my-3"
+            />
+          )}
+
           {Object.entries(q.randomizedOptions).map(([key, value]) => (
             <div key={key} className="form-check ms-3">
               <input
@@ -214,21 +241,49 @@ const renderHome = () => (
                 type={isMulti ? 'checkbox' : 'radio'}
                 name={`q_${q.id}`}
                 value={key}
-                checked={isMulti ? (answers[q.id] || []).includes(key) : answers[q.id] === key}
+                checked={
+                  isMulti
+                    ? (answers[q.id] || []).includes(key)
+                    : answers[q.id] === key
+                }
                 onChange={() => handleOptionChange(q.id, key, isMulti)}
               />
-              <label className="form-check-label">{key}. {value}</label>
+              <label className="form-check-label">
+                {key}. {value}
+              </label>
             </div>
           ))}
         </div>
+
         <div>
-          <button className="btn btn-secondary me-2" onClick={handlePrev} disabled={currentIndex === 0}>Previous</button>
-          <button className="btn btn-secondary" onClick={handleNext} disabled={currentIndex === sessionQuestions.length - 1}>Next</button>
+          <button
+            className="btn btn-secondary me-2"
+            onClick={handlePrev}
+            disabled={currentIndex === 0}
+          >
+            Previous
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={handleNext}
+            disabled={currentIndex === sessionQuestions.length - 1}
+          >
+            Next
+          </button>
         </div>
+
         {currentIndex === sessionQuestions.length - 1 && (
           <div className="mt-4">
-            <button className="btn btn-success" onClick={handleSubmit} disabled={submitted}>Submit</button>
-            {submitted && <p className="text-success mt-3">Exam submitted. Good luck!</p>}
+            <button
+              className="btn btn-success"
+              onClick={handleSubmit}
+              disabled={submitted}
+            >
+              Submit
+            </button>
+            {submitted && (
+              <p className="text-success mt-3">Exam submitted. Good luck!</p>
+            )}
           </div>
         )}
       </div>
@@ -239,41 +294,79 @@ const renderHome = () => (
     const score = sessionQuestions.reduce((acc, q) => {
       const correct = q.answer;
       const user = answers[q.id];
+
       const isCorrect = Array.isArray(correct)
-        ? Array.isArray(user) && correct.sort().join() === user.sort().join()
+        ? Array.isArray(user) &&
+          [...correct].sort().join() === [...user].sort().join()
         : user === correct;
+
       return acc + (isCorrect ? 1 : 0);
     }, 0);
 
     return (
       <div className="container py-4">
         <h2>Results</h2>
-        <p className="fs-4 fw-bold">You got {score} out of {sessionQuestions.length} correct.</p>
+        <p className="fs-4 fw-bold">
+          You got {score} out of {sessionQuestions.length} correct.
+        </p>
+
         {sessionQuestions.map((q, index) => {
           const correct = q.answer;
           const user = answers[q.id];
+
           const isCorrect = Array.isArray(correct)
-            ? Array.isArray(user) && correct.sort().join() === user.sort().join()
+            ? Array.isArray(user) &&
+              [...correct].sort().join() === [...user].sort().join()
             : user === correct;
+
           const getAnswerText = (letter) => q.options[letter] || '';
+
           return (
             <div key={q.id} className="mb-4">
-              <p><strong>
-                {index + 1}.{' '}
-                {q.question.split('\n').map((line, i) => (
-                  <span key={i}>{line}<br /></span>
-                ))}
-              </strong></p>
-              {q.image && <img src={`/images/${q.image}`} alt={`Question ${q.id}`} className="img-fluid my-3" />}
-              <p className={isCorrect ? 'text-success' : 'text-danger'}>
-                Your Answer: {Array.isArray(user) ? user.map(getAnswerText).join(', ') : getAnswerText(user) || 'None'}<br />
-                Correct: {Array.isArray(correct) ? correct.map(getAnswerText).join(', ') : getAnswerText(correct) || 'N/A'}
+              <p>
+                <strong>
+                  {index + 1}.{' '}
+                  {q.question.split('\n').map((line, i) => (
+                    <span key={i}>
+                      {line}
+                      <br />
+                    </span>
+                  ))}
+                </strong>
               </p>
-              {q.explanation && <p><em>Explanation: {q.explanation}</em></p>}
+
+              {q.image && (
+                <img
+                  src={`/images/${q.image}`}
+                  alt={`Question ${q.id}`}
+                  className="img-fluid my-3"
+                />
+              )}
+
+              <p className={isCorrect ? 'text-success' : 'text-danger'}>
+                Your Answer:{' '}
+                {Array.isArray(user)
+                  ? user.map(getAnswerText).join(', ')
+                  : getAnswerText(user) || 'None'}
+                <br />
+                Correct:{' '}
+                {Array.isArray(correct)
+                  ? correct.map(getAnswerText).join(', ')
+                  : getAnswerText(correct) || 'N/A'}
+              </p>
+
+              {q.explanation && (
+                <p>
+                  <em>Explanation: {q.explanation}</em>
+                </p>
+              )}
             </div>
           );
         })}
-        <button className="btn btn-primary mt-4" onClick={() => setView('home')}>Back to Home</button>
+
+        <button className="btn btn-primary mt-4" onClick={() => setView('home')}>
+          Back to Home
+        </button>
       </div>
     );
   };
