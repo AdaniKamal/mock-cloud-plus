@@ -110,7 +110,6 @@ const App = () => {
   localStorage.setItem('scoreHistory', JSON.stringify(updatedHistory));
   setView('results');
 }, [sessionQuestions, answers, scoreHistory]);
-  };
 
 const renderHome = () => (
   <div className="container min-vh-100 d-flex flex-column justify-content-center align-items-center text-center py-4">
