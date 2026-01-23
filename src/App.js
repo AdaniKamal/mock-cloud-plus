@@ -1,5 +1,5 @@
 // cloudplus_mock_exam/src/App.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import questions from './questions.json';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
@@ -50,7 +50,7 @@ const App = () => {
         handleSubmit();
       }
     }
-  }, [view, timeLeft, submitted]);
+  }, [view, timeLeft, submitted, handleSubmit]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -91,21 +91,25 @@ const App = () => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    const score = sessionQuestions.reduce((acc, q) => {
-      const correct = q.answer;
-      const user = answers[q.id];
-      if (Array.isArray(correct)) {
-        return acc + (Array.isArray(user) && correct.sort().join() === user.sort().join() ? 1 : 0);
-      } else {
-        return acc + (user === correct ? 1 : 0);
-      }
-    }, 0);
-    const updatedHistory = [...scoreHistory, score];
-    setScoreHistory(updatedHistory);
-    localStorage.setItem('scoreHistory', JSON.stringify(updatedHistory));
-    setView('results');
+  const handleSubmit = useCallback(() => {
+  setSubmitted(true);
+
+  const score = sessionQuestions.reduce((acc, q) => {
+    const correct = q.answer;
+    const user = answers[q.id];
+
+    if (Array.isArray(correct)) {
+      return acc + (Array.isArray(user) && [...correct].sort().join() === [...user].sort().join() ? 1 : 0);
+    } else {
+      return acc + (user === correct ? 1 : 0);
+    }
+  }, 0);
+
+  const updatedHistory = [...scoreHistory, score];
+  setScoreHistory(updatedHistory);
+  localStorage.setItem('scoreHistory', JSON.stringify(updatedHistory));
+  setView('results');
+}, [sessionQuestions, answers, scoreHistory]);
   };
 
 const renderHome = () => (
